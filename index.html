@@ -3,181 +3,634 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volkswagen Campaign: "Experience the Best"</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your external CSS file -->
+    <title>Bulls and Cows Game</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary: #7c4dff;
+            --primary-dark: #5e35b1;
+            --secondary: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #4caf50;
+            --error: #f44336;
+            --gray: #6c757d;
+        }
+        
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
         header {
-            background-color: #003b49;
-            color: white;
             text-align: center;
-            padding: 20px;
+            margin-bottom: 30px;
         }
-
-        section {
-            padding: 20px;
-            margin: 20px;
-            background-color: white;
-            border-radius: 8px;
-        }
-
-        h1, h2 {
-            color: #003b49;
-        }
-
-        ul {
-            list-style-type: none;
-        }
-
-        .content-section {
-            margin-top: 20px;
-        }
-
-        .section-title {
-            font-size: 1.5em;
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
-
-        .campaign-item {
-            margin-bottom: 15px;
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
         }
-
-        .key-messages {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .digit-input {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--light);
+        }
+        
+        .digit-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.2);
+        }
+        
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background-color: var(--gray);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            text-align: center;
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 12px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .guess-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+        
+        .guess-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .guess-number {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .guess-result {
+            display: flex;
             gap: 10px;
         }
-
-        .key-message {
-            background-color: #003b49;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
+        
+        .bulls, .cows {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .bulls {
+            color: var(--success);
+        }
+        
+        .cows {
+            color: var(--secondary);
+        }
+        
+        .bull-icon, .cow-icon {
+            font-size: 1.2rem;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+        }
+        
+        .rules-list {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .rules-list li {
+            margin-bottom: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        
+        @media (max-width: 576px) {
+            .input-group {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .digit-input {
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .info-item {
+                margin: 0;
+            }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .pulse {
+            animation: pulse 1s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .win-animation {
+            animation: win 1s ease-in-out;
+        }
+        
+        @keyframes win {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1>Volkswagen Campaign: "Experience the Best"</h1>
-        <p>Your gateway to innovation, quality, and sustainability.</p>
-    </header>
-
-    <section>
-        <div class="campaign-item">
-            <h2 class="section-title">Objective:</h2>
-            <ul>
-                <li>Increase brand awareness among young adults (25-45) with a moderate to high income.</li>
-                <li>Drive sales of specific models (Golf, Jetta, Passat).</li>
-                <li>Enhance the overall perception of the VW brand as reliable, eco-friendly, and innovative.</li>
-            </ul>
-        </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Target Audience:</h2>
-            <ul>
-                <li><strong>Demographics:</strong> Young adults aged 25-45 with a moderate to high income.</li>
-                <li><strong>Interests:</strong> Outdoor enthusiasts, music lovers, foodies, and families.</li>
-                <li><strong>Values:</strong> Sustainability, quality, and reliability.</li>
-                <li><strong>Behaviors:</strong> Active on social media, frequent car buyers, and influencers.</li>
-            </ul>
-        </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Key Messages:</h2>
-            <div class="key-messages">
-                <div class="key-message">
-                    <h3>Innovative Technology</h3>
-                    <p>"Experience the future of driving with VW's advanced safety features, infotainment systems, and eco-friendly powertrains."</p>
+    <div class="container">
+        <header>
+            <h1>Bulls & Cows</h1>
+            <p>Guess the secret code!</p>
+        </header>
+        
+        <div class="card">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">Attempts</div>
+                    <div class="info-value" id="attempts">0</div>
                 </div>
-                <div class="key-message">
-                    <h3>German Engineering</h3>
-                    <p>"Uncompromising quality and durability from Germany's finest - experience the difference in every drive."</p>
+                <div class="info-item">
+                    <div class="info-label">Digits</div>
+                    <div class="info-value" id="digits-count">4</div>
                 </div>
-                <div class="key-message">
-                    <h3>Sustainability</h3>
-                    <p>"Join us in our commitment to reducing emissions and promoting environmentally friendly practices. Together, we can make a difference."</p>
-                </div>
-                <div class="key-message">
-                    <h3>Fun-to-Drive</h3>
-                    <p>"Get ready for an adrenaline rush with VW's performance capabilities and handling. Drive like you mean it."</p>
+                <div class="info-item">
+                    <div class="info-label">Best Score</div>
+                    <div class="info-value" id="best-score">-</div>
                 </div>
             </div>
+            
+            <div id="input-container" class="input-group">
+            </div>
+            
+            <button id="guess-button" class="button">Make a Guess</button>
+            <button id="new-game-button" class="button secondary">New Game</button>
+            <button id="show-rules-button" class="button secondary">Show Rules</button>
         </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Media Channels:</h2>
-            <ul>
-                <li>
-                    <strong>Digital Media:</strong>
+        
+        <div class="card">
+            <h2>Guess History</h2>
+            <div id="history" class="history">
+                <!-- History items will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Win Modal -->
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2>Congratulations! 🎉</h2>
+            <p>You've guessed the secret code:</p>
+            <p id="win-code" class="guess-number" style="font-size: 2rem; color: var(--success); margin: 20px 0;"></p>
+            <p>It took you <span id="win-attempts"></span> attempts.</p>
+            <button id="play-again-button" class="button">Play Again</button>
+        </div>
+    </div>
+    
+    <!-- Rules Modal -->
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <h2>How to Play</h2>
+            <ul class="rules-list">
+                <li>The computer selects a secret code with unique digits.</li>
+                <li>Each guess must be a code with the same number of unique digits.</li>
+                <li>After each guess, you get feedback:
                     <ul>
-                        <li>Facebook: Targeted ads highlighting the unique features of each model.</li>
-                        <li>Instagram: Influencer partnerships, sponsored content, and eye-catching visuals showcasing the beauty and performance of VW vehicles.</li>
-                        <li>Twitter: Real-time engagement with customers, responding to queries and sharing campaign updates.</li>
-                        <li>YouTube: Test drive videos, brand stories, and customer testimonials promoting VW's innovative technology and German engineering.</li>
+                        <li><strong>Bulls (🎯):</strong> Right digit in the right position.</li>
+                        <li><strong>Cows (🐮):</strong> Right digit in the wrong position.</li>
                     </ul>
                 </li>
-                <li>
-                    <strong>Traditional Media:</strong>
-                    <ul>
-                        <li>Print advertising (magazines, newspapers): Feature spreads highlighting the features and benefits of specific models.</li>
-                        <li>Outdoor advertising (billboards, posters): Eye-catching visuals showcasing the beauty and performance of VW vehicles in various settings.</li>
-                        <li>Television commercials: 30-second ads highlighting the unique features and benefits of VW vehicles.</li>
-                    </ul>
-                </li>
+                <li>Use the feedback to deduce the secret code.</li>
+                <li>Try to solve it in as few attempts as possible!</li>
             </ul>
+            
+           
+            
+            <button id="close-rules-button" class="button">Got it!</button>
         </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Promotional Ideas:</h2>
-            <ul>
-                <li>Test Drive Events: Host events at dealerships or scenic locations offering test drives and demos of specific models.</li>
-                <li>Influencer Partnerships: Collaborate with social media influencers, content creators, and automotive experts to promote VW vehicles and share their experiences.</li>
-                <li>Contests and Giveaways: Organize contests, sweepstakes, or giveaways on social media platforms to generate buzz and encourage engagement around the campaign.</li>
-            </ul>
-        </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Budget Allocation:</h2>
-            <ul>
-                <li><strong>Digital Media:</strong> 50% (Facebook, Instagram, Twitter, YouTube)</li>
-                <li><strong>Traditional Media:</strong> 30% (Print, Outdoor, Television)</li>
-                <li><strong>Events and Experiences:</strong> 10% (Test drive events, influencer partnerships)</li>
-                <li><strong>Promotional Ideas:</strong> 5% (Contests, giveaways)</li>
-            </ul>
-        </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Timeline:</h2>
-            <ul>
-                <li><strong>Month 1-3:</strong> Campaign planning, creative development, and media buying.</li>
-                <li><strong>Month 4-6:</strong> Launch campaign, begin executing events and promotions.</li>
-                <li><strong>Month 7-9:</strong> Monitor performance, optimize targeting and messaging.</li>
-                <li><strong>Month 10-12:</strong> Analyze results, plan for future campaigns.</li>
-            </ul>
-        </div>
-
-        <div class="campaign-item">
-            <h2 class="section-title">Measurement and Evaluation:</h2>
-            <ul>
-                <li>
-                    <strong>Key Performance Indicators (KPIs):</strong>
-                    <ul>
-                        <li>Website traffic and engagement metrics (time spent on site, bounce rate).</li>
-                        <li>Social media engagement metrics (likes, shares, comments).</li>
-                        <li>Lead generation and conversion rates.</li>
-                    </ul>
-                </li>
-                <li><strong>ROI Analysis:</strong> Track campaign ROI to measure the effectiveness of different channels and tactics.</li>
-            </ul>
-        </div>
-    </section>
-
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game variables
+            let secretCode = [];
+            let attempts = 0;
+            let digitsCount = 4; // Default: Easy mode
+            let bestScores = {
+                4: localStorage.getItem('bestScore4') || '-',
+                5: localStorage.getItem('bestScore5') || '-',
+                6: localStorage.getItem('bestScore6') || '-'
+            };
+            
+            // DOM elements
+            const inputContainer = document.getElementById('input-container');
+            const guessButton = document.getElementById('guess-button');
+            const newGameButton = document.getElementById('new-game-button');
+            const showRulesButton = document.getElementById('show-rules-button');
+            const historyContainer = document.getElementById('history');
+            const attemptsDisplay = document.getElementById('attempts');
+            const digitsCountDisplay = document.getElementById('digits-count');
+            const bestScoreDisplay = document.getElementById('best-score');
+            
+            // Modals
+            const winModal = document.getElementById('win-modal');
+            const rulesModal = document.getElementById('rules-modal');
+            const playAgainButton = document.getElementById('play-again-button');
+            const closeRulesButton = document.getElementById('close-rules-button');
+            const winCode = document.getElementById('win-code');
+            const winAttempts = document.getElementById('win-attempts');
+            
+            // Generate a random secret code with unique digits
+            function generateSecretCode(length) {
+                let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                let code = [];
+                
+                // Shuffle array and take first 'length' elements
+                for (let i = 0; i < length; i++) {
+                    let randomIndex = Math.floor(Math.random() * numbers.length);
+                    code.push(numbers[randomIndex]);
+                    numbers.splice(randomIndex, 1);
+                }
+                
+                return code;
+            }
+            
+            // Create input fields based on digits count
+            function createInputFields() {
+                inputContainer.innerHTML = '';
+                
+                for (let i = 0; i < digitsCount; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'tel';
+                    input.className = 'digit-input';
+                    input.maxLength = 1;
+                    input.setAttribute('data-index', i);
+                    input.pattern = '[0-9]*';
+                    input.inputMode = 'numeric';
+                    
+                    // Auto-focus next input when a digit is entered
+                    input.addEventListener('input', function(e) {
+                        if (e.target.value) {
+                            const nextInput = inputContainer.querySelector(`[data-index="${parseInt(e.target.dataset.index) + 1}"]`);
+                            if (nextInput) {
+                                nextInput.focus();
+                            }
+                        }
+                    });
+                    
+                    // Handle backspace to go to previous input
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Backspace' && !e.target.value) {
+                            const prevInput = inputContainer.querySelector(`[data-index="${parseInt(e.target.dataset.index) - 1}"]`);
+                            if (prevInput) {
+                                prevInput.focus();
+                            }
+                        }
+                    });
+                    
+                    inputContainer.appendChild(input);
+                }
+                
+                // Focus first input
+                const firstInput = inputContainer.querySelector('[data-index="0"]');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }
+            
+            // Check if inputs are valid (all filled, all digits, all unique)
+            function validateInputs() {
+                const inputs = inputContainer.querySelectorAll('.digit-input');
+                const values = Array.from(inputs).map(input => input.value);
+                
+                // Check if all inputs are filled
+                if (values.some(val => val === '')) {
+                    return false;
+                }
+                
+                // Check if all inputs are digits
+                if (values.some(val => !/^\d$/.test(val))) {
+                    return false;
+                }
+                
+                // Check if all digits are unique
+                const uniqueValues = new Set(values);
+                if (uniqueValues.size !== values.length) {
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Get current guess from input fields
+            function getCurrentGuess() {
+                const inputs = inputContainer.querySelectorAll('.digit-input');
+                return Array.from(inputs).map(input => parseInt(input.value));
+            }
+            
+            // Calculate bulls and cows
+            function calculateBullsAndCows(guess) {
+                let bulls = 0;
+                let cows = 0;
+                
+                // Check for bulls (right position, right digit)
+                for (let i = 0; i < secretCode.length; i++) {
+                    if (guess[i] === secretCode[i]) {
+                        bulls++;
+                    }
+                }
+                
+                // Check for cows (wrong position, right digit)
+                const guessSet = new Set(guess);
+                const secretSet = new Set(secretCode);
+                const intersection = new Set([...guessSet].filter(x => secretSet.has(x)));
+                
+                // Total common digits minus bulls = cows
+                cows = intersection.size - bulls;
+                
+                return { bulls, cows };
+            }
+            
+            // Add guess to history
+            function addToHistory(guess, result) {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'guess-item';
+                
+                const guessNumber = document.createElement('div');
+                guessNumber.className = 'guess-number';
+                guessNumber.textContent = guess.join('');
+                
+                const guessResult = document.createElement('div');
+                guessResult.className = 'guess-result';
+                
+                const bullsElement = document.createElement('div');
+                bullsElement.className = 'bulls';
+                bullsElement.innerHTML = `<span class="bull-icon">🎯</span> ${result.bulls}`;
+                
+                const cowsElement = document.createElement('div');
+                cowsElement.className = 'cows';
+                cowsElement.innerHTML = `<span class="cow-icon">🐮</span> ${result.cows}`;
+                
+                guessResult.appendChild(bullsElement);
+                guessResult.appendChild(cowsElement);
+                
+                historyItem.appendChild(guessNumber);
+                historyItem.appendChild(guessResult);
+                
+                // Add to top of history
+                historyContainer.insertBefore(historyItem, historyContainer.firstChild);
+                
+                // Animate the new entry
+                setTimeout(() => {
+                    historyItem.classList.add('pulse');
+                }, 10);
+            }
+            
+            // Handle guess submission
+            function handleGuess() {
+                if (!validateInputs()) {
+                    inputContainer.classList.add('shake');
+                    setTimeout(() => {
+                        inputContainer.classList.remove('shake');
+                    }, 500);
+                    return;
+                }
+                
+                const guess = getCurrentGuess();
+                attempts++;
+                attemptsDisplay.textContent = attempts;
+                
+                const result = calculateBullsAndCows(guess);
+                addToHistory(guess, result);
+                
+                // Clear input fields
+                const inputs = inputContainer.querySelectorAll('.digit-input');
+                inputs.forEach(input => input.value = '');
+                inputs[0].focus();
+                
+                // Check for win
+                if (result.bulls === digitsCount) {
+                    handleWin();
+                }
+            }
+            
+            // Handle win condition
+            function handleWin() {
+                // Update best score if needed
+                if (bestScores[digitsCount] === '-' || attempts < parseInt(bestScores[digitsCount])) {
+                    bestScores[digitsCount] = attempts;
+                    localStorage.setItem(`bestScore${digitsCount}`, attempts);
+                    bestScoreDisplay.textContent = attempts;
+                    bestScoreDisplay.classList.add('win-animation');
+                    setTimeout(() => {
+                        bestScoreDisplay.classList.remove('win-animation');
+                    }, 1000);
+                }
+                
+                // Display win modal
+                winCode.textContent = secretCode.join('');
+                winAttempts.textContent = attempts;
+                winModal.classList.add('active');
+            }
+            
+            // Start a new game
+            function startNewGame() {
+                secretCode = generateSecretCode(digitsCount);
+                attempts = 0;
+                attemptsDisplay.textContent = attempts;
+                digitsCountDisplay.textContent = digitsCount;
+                bestScoreDisplay.textContent = bestScores[digitsCount];
+                historyContainer.innerHTML = '';
+                createInputFields();
+                
+                // Close modals if open
+                winModal.classList.remove('active');
+                rulesModal.classList.remove('active');
+                
+                console.log("Secret Code (for debugging):", secretCode.join(''));
+            }
+            
+            // Event listeners
+            guessButton.addEventListener('click', handleGuess);
+            newGameButton.addEventListener('click', () => startNewGame());
+            showRulesButton.addEventListener('click', () => rulesModal.classList.add('active'));
+            closeRulesButton.addEventListener('click', () => rulesModal.classList.remove('active'));
+            playAgainButton.addEventListener('click', () => startNewGame());
+            
+            // Handle key press events
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // Use Enter key as a shortcut for submitting a guess
+                    if (!winModal.classList.contains('active') && !rulesModal.classList.contains('active')) {
+                        handleGuess();
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    // Use Escape key to close modals
+                    winModal.classList.remove('active');
+                    rulesModal.classList.remove('active');
+                }
+            });
+            
+            
+            // Initialize game
+            startNewGame();
+            // Show rules on first load
+            rulesModal.classList.add('active');
+        });
+    </script>
 </body>
 </html>
